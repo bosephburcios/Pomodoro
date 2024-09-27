@@ -1,0 +1,55 @@
+.menu-icon {
+    position: fixed;
+    top: 20px; /* Adjust as needed */
+    left: 20px; /* Adjust as needed */
+    background: none;
+    border: none;
+    font-size: 50px; /* Responsive font size with min and max */
+    font-weight: 300; /* Lighter font weight for the menu icon */
+    cursor: pointer;
+    color: white; /* Adjust color as needed */
+    transition: color 0.3s; /* Smooth color transition */
+}
+
+.menu-icon:hover {
+    color: #b1b1ae;
+}
+
+.menu-popup {
+    position: fixed;
+    top: 90px;
+    left: 25px;
+    background-color: #333; /* Dark grey */
+    color: #f0f0f0; /* Off-white text */
+    padding: 15px; /* Fixed padding */
+    border-radius: 5px;
+    z-index: 1000; /* Ensure it's above other elements */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 250px; /* Set width */
+    height: 450px; /* Set height */
+}
+
+.menu-popup ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0; /* Remove default margin */
+}
+
+.menu-popup li {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 18px; 
+    font-weight: bold;
+}
+
+.menu-popup li:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
+}
+
+/* Style for the X icon */
+.menu-icon.open {
+    font-weight: 300;
+    font-size: 35px;
+    top: 30px;
+    left: 23px;
+}
