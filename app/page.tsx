@@ -2,6 +2,7 @@ import Timer from './components/Timer';
 import Menu from './components/Menu';
 import './styles/App.css';
 import './styles/Menu.css';
+import './styles/Theme.css';
 
 function App() {
   return (

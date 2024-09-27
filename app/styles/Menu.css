@@ -27,6 +27,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     width: 250px; /* Set width */
     height: 450px; /* Set height */
+    animation: fadeIn 0.4s; 
 }
 
 .menu-popup ul {
@@ -52,4 +53,14 @@
     font-size: 35px;
     top: 30px;
     left: 23px;
+    animation: fadeIn 0.4s; 
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }   
 }

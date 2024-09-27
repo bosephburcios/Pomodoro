@@ -53,7 +53,6 @@ body {
   position: relative; 
   width: 100%;
   height: 100vh;
-  background-image: url('/gifs/other-background.gif'); 
   background-size: cover; 
   display: flex; 
   justify-content: center; 
@@ -85,7 +84,7 @@ body {
 
 .controls button {
   margin: 0 10px; 
-  padding: 10px 20px;
+  padding: 9px 25px;
   border: none;
   border-radius: 9px;
   background-color: #648cfa;
