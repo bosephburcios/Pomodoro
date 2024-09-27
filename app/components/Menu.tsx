@@ -13,6 +13,7 @@ const Menu: React.FC = () => {
         'other-background.gif',
         'background.gif',
         'gojo.gif',
+        'cherry.gif',
     ];
 
     const toggleMenu = () => {
@@ -80,18 +81,20 @@ const Menu: React.FC = () => {
                         <button className="close-button" onClick={handleCloseThemeMenu}>✕</button>
                         <h1 className="theme-title">Choose Theme:</h1>
                         <div className="gif-options">
-                            {gifs.map(gif => (
-                                <div key={gif} className="gif-option">
-                                    <img src={`/gifs/${gif}`} alt={gif} className="gif-preview" />
-                                    <button 
-                                        className={`select-button ${selectedGif === gif ? 'selected-button' : ''}`} 
-                                        onClick={() => handleGifSelect(gif)}
-                                    >
-                                        {selectedGif === gif ? 'Selected' : 'Select'}
-                                    </button>
-                                </div>
-                            ))}
-                            <div className="upload-gif">
+                            <div className="gif-container"> {/* Scrolling container */}
+                                {gifs.map(gif => (
+                                    <div key={gif} className="gif-option">
+                                        <img src={`/gifs/${gif}`} alt={gif} className="gif-preview" />
+                                        <button 
+                                            className={`select-button ${selectedGif === gif ? 'selected-button' : ''}`} 
+                                            onClick={() => handleGifSelect(gif)}
+                                        >
+                                            {selectedGif === gif ? 'Selected' : 'Select'}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="upload-gif"> {/* Fixed position */}
                                 <input 
                                     className="hidden-input" 
                                     type="file" 
