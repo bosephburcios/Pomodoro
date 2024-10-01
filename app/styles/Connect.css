@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.connect-container {
+    @apply flex justify-center items-center h-screen bg-gradient-to-b from-black to-gray-900; /* Gradient from black to dark gray */
+}
+
+.content {
+    @apply text-center; /* Center text for all three elements */
+}
+
+.go-back-button {
+    @apply absolute top-5 left-5 border border-white text-white bg-transparent font-bold py-2 px-4 rounded-full; /* Pill shape with white outline */
+    transition: background-color 0.3s ease; /* Smooth transition for hover */
+}
+
+.go-back-button:hover {
+    @apply bg-white text-black; /* Change background and text color on hover */
+}
+
+.slogan {
+    @apply text-white font-bold text-6xl leading-tight; /* Slightly larger white text with tighter line height */
+    animation: fadeIn 0.9s ease-in-out; /* Fade in animation for 0.3s */
+    margin-bottom: 1rem; /* Add margin to separate lines */
+}
+
+.description {
+    @apply text-gray-400 font-bold mb-8 text-xl mt-10; /* Slightly larger gray text with margin */
+    animation: fadeIn 1.2s ease-in-out;
+    font-size: 20px;
+}
+
+.connect-button {
+    @apply bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-20 rounded-full mt-6; 
+    display: inline-block; /* Ensure the button is inline-block for centering */
+    animation: fadeIn 1.5s ease-in-out; /* Fade in animation for 0.3s */
+}
+
+.flipping-text {
+    @apply relative; /* Position relative to contain absolute children */
+    height: 50px; /* Adjust height to contain smaller text */
+    overflow: hidden; /* Hide overflow for clean flipping */
+    animation: fadeIn 1.8s ease-in-out; /* Fade in animation for 0.3s */
+}
+
+.flipping-text-item {
+    @apply absolute inset-0 flex items-center justify-center text-2xl font-bold; /* Smaller text size */
+    transition: transform 0.5s ease-in-out; /* Transition for smooth flip */
+}
+
+.flipping-text-item:nth-child(1) {
+    z-index: 1; /* Ensure current service is above the next */
+}
+
+.flip-enter-active {
+    animation: flipIn 0.5s forwards; /* Flip in animation */
+}
+
+.flip-leave-active {
+    animation: flipOut 0.5s forwards; /* Flip out animation */
+}
+
+.overlay {
+    @apply fixed inset-0 flex justify-center items-center bg-black bg-opacity-75; /* Full-screen overlay with dark background */
+    z-index: 10; /* Ensure overlay is above other content */
+}
+
+.overlay-content {
+    @apply bg-gray-800 p-6 rounded-lg shadow-lg relative; /* Content box style */
+    width: 90%; /* Width of the overlay content */
+    max-width: 500px; /* Maximum width for larger screens */
+    animation: zoomIn 0.3s ease;
+}
+
+.overlay-content-exit {
+    animation: zoomOut 0.3s ease; /* Apply the zoomOut animation when exiting */
+}
+
+.overlay-title {
+    @apply text-white text-xl mb-6 font-bold; /* Title styles */
+}
+
+.close-button {
+    @apply absolute top-3 right-4 text-white rounded-full w-8 h-8 flex items-center justify-center border border-white; 
+    cursor: pointer; /* Show pointer cursor */
+    transition: color 0.3s ease, border-color 0.3s ease; /* Smooth transition for color and border */
+}
+
+.close-button:hover {
+    @apply text-gray-100 border-gray-100; /* Brighter text and border on hover */
+}
+
+/* Adjusted options to create a grid layout */
+.options {
+    @apply grid grid-cols-2 gap-4; /* Two columns with gap */
+}
+
+.options .option:nth-child(1) {
+    @apply bg-green-500 text-white font-bold py-4 rounded-lg text-center; /* Spotify style */
+    transition: background-color 0.3s; /* Transition for hover */
+}
+
+.options .option:nth-child(1):hover {
+    @apply bg-green-400; /* Lighter green on hover */
+    cursor: pointer;
+}
+
+.options .option:nth-child(2) {
+    @apply bg-red-500 text-white font-bold py-4 rounded-lg text-center; /* YouTube style */
+    transition: background-color 0.3s; /* Transition for hover */
+}
+
+.options .option:nth-child(2):hover {
+    @apply bg-red-400; /* Lighter red on hover */
+    cursor: pointer;
+}
+
+.options .option:nth-child(3) {
+    @apply bg-orange-500 text-white font-bold py-4 rounded-lg text-center; /* SoundCloud style */
+    transition: background-color 0.3s; /* Transition for hover */
+}
+
+.options .option:nth-child(3):hover {
+    @apply bg-orange-400; /* Lighter orange on hover */
+    cursor: pointer;
+}
+
+.options .option:nth-child(4) {
+    @apply bg-red-600 text-white font-bold py-4 rounded-lg text-center; /* SoundCloud style */
+    transition: background-color 0.3s; /* Transition for hover */
+}
+
+.options .option:nth-child(4):hover {
+    @apply bg-red-500; /* Lighter orange on hover */
+    cursor: pointer;
+}
+
+.option {
+    @apply bg-gray-600 text-white font-bold py-4 rounded-lg text-center; /* Option style */
+    transition: background-color 0.3s; /* Transition for hover */
+}
+
+.option:hover {
+    @apply bg-gray-500; /* Darker background on hover */
+    cursor: pointer;
+}
+
+.options .option:nth-child(2),
+.options .option:nth-child(3),
+.options .option:nth-child(4) {
+    @apply relative opacity-50 cursor-not-allowed; /* Add a tint and disable cursor */
+    pointer-events: none; /* Disable pointer events */
+}
+
+/* Add the "Coming Soon" pill */
+.coming-soon-pill {
+    @apply absolute top-0 right-0 bg-white text-white text-xs font-bold py-1 px-2 rounded-full; /* Style the pill */
+    transform: translate(50%, -50%); /* Position the pill slightly off the button */
+}
+
+/* Add the pill to the 2nd-4th child buttons */
+.options .option:nth-child(2)::after,
+.options .option:nth-child(3)::after,
+.options .option:nth-child(4)::after {
+    content: 'Coming Soon';
+    @apply absolute top-1 right-8 bg-white text-black text-xs font-bold py-1 px-2 rounded-full; /* Style the pill */
+    transform: translate(50%, -50%); /* Position the pill slightly off the button */
+    cursor: not-allowed;
+}
+
+@keyframes flipIn {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes flipOut {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-100%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px); /* Start slightly below */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0); /* End at the original position */
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.7); /* Start smaller */
+        opacity: 0; /* Start transparent */
+    }
+    to {
+        transform: scale(1); /* End at normal size */
+        opacity: 1; /* End fully visible */
+    }
+}
+
+@keyframes zoomOut {
+    from {
+        transform: scale(1); /* Start at normal size */
+        opacity: 1; /* Start fully visible */
+    }
+    to {
+        transform: scale(0.7); /* End smaller */
+        opacity: 0; /* End transparent */
+    }
+}
