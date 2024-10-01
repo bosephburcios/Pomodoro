@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const Menu: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-    const [selectedGif, setSelectedGif] = useState<string>('other-background.gif'); // Default GIF
-    const [bgImage, setBgImage] = useState<string | null>(`/gifs/${selectedGif}`); // Initial background image
+    const [selectedGif, setSelectedGif] = useState<string>('other-background.gif');
+    const [bgImage, setBgImage] = useState<string>(`/gifs/${selectedGif}`);
 
-    // List of static GIF filenames
+    const router = useRouter();
+
     const gifs = [
         'other-background.gif',
         'background.gif',
@@ -16,8 +18,10 @@ const Menu: React.FC = () => {
         'cherry.gif',
     ];
 
-    const toggleMenu = () => {
-        setIsOpen(prev => !prev);
+    const toggleMenu = () => setIsOpen(prev => !prev);
+    
+    const handleConnectServiceClick = () => {
+        router.push('/connect_services'); // Ensure correct routing
     };
 
     const handleThemesClick = () => {
@@ -27,37 +31,25 @@ const Menu: React.FC = () => {
 
     const handleGifSelect = (gif: string) => {
         setSelectedGif(gif);
-        setBgImage(`/gifs/${gif}`); // Set the background image when selected
+        setBgImage(`/gifs/${gif}`);
         setIsThemeMenuOpen(false);
     };
 
-    const handleCloseThemeMenu = () => {
-        setIsThemeMenuOpen(false);
-    };
+    const handleCloseThemeMenu = () => setIsThemeMenuOpen(false);
 
-    // Set the background image when the component mounts
     useEffect(() => {
-        // Set initial background image
         document.body.style.backgroundImage = `url(${bgImage})`;
-        document.body.style.backgroundSize = 'cover'; 
+        document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundColor = 'transparent'; 
-    }, []); // Run only once on mount
+        document.body.style.backgroundColor = 'transparent';
 
-    // Update the background image whenever bgImage changes
-    useEffect(() => {
-        if (bgImage) {
-            document.body.style.backgroundImage = `url(${bgImage})`;
-        }
+        return () => {
+            document.body.style.backgroundImage = ''; // Clean up on unmount
+        };
     }, [bgImage]);
 
-    // Apply grey tint to body when theme menu is open
     useEffect(() => {
-        if (isThemeMenuOpen) {
-            document.body.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        } else {
-            document.body.style.backgroundColor = 'transparent'; // Reset when closed
-        }
+        document.body.style.backgroundColor = isThemeMenuOpen ? 'rgba(0, 0, 0, 0.5)' : 'transparent';
     }, [isThemeMenuOpen]);
 
     return (
@@ -68,7 +60,7 @@ const Menu: React.FC = () => {
             {isOpen && (
                 <div className="menu-popup">
                     <ul>
-                        <li>Connect Service</li>
+                        <li onClick={handleConnectServiceClick}>Connect Service</li>
                         <li onClick={handleThemesClick}>Themes</li>
                         <li>Settings</li>
                     </ul>
@@ -81,7 +73,7 @@ const Menu: React.FC = () => {
                         <button className="close-button" onClick={handleCloseThemeMenu}>✕</button>
                         <h1 className="theme-title">Choose Theme:</h1>
                         <div className="gif-options">
-                            <div className="gif-container"> {/* Scrolling container */}
+                            <div className="gif-container">
                                 {gifs.map(gif => (
                                     <div key={gif} className="gif-option">
                                         <img src={`/gifs/${gif}`} alt={gif} className="gif-preview" />
@@ -94,14 +86,14 @@ const Menu: React.FC = () => {
                                     </div>
                                 ))}
                             </div>
-                            <div className="upload-gif"> {/* Fixed position */}
+                            <div className="upload-gif">
                                 <input 
                                     className="hidden-input" 
                                     type="file" 
                                     accept="image/gif" 
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
-                                        if (file) {
+                                        if (file && file.type === 'image/gif') {
                                             const reader = new FileReader();
                                             reader.onload = (event) => {
                                                 const result = event.target?.result as string;
@@ -110,6 +102,8 @@ const Menu: React.FC = () => {
                                                 setIsThemeMenuOpen(false);
                                             };
                                             reader.readAsDataURL(file);
+                                        } else {
+                                            alert("Please upload a valid GIF.");
                                         }
                                     }} 
                                 />

@@ -5,7 +5,7 @@
     transform: translate(-50%, -50%);
     width: 80%;
     max-width: 500px;
-    height: 52%;
+    height: 600px;
     max-height: 80vh;
     overflow: hidden;
     background-color: #333; /* Match with the original menu */
@@ -17,6 +17,7 @@
     align-items: flex-start; /* Align items to the start */
     padding: 20px;
     z-index: 1000;
+    animation: fadeIn 0.5s; /* Fade in animation */
 }
 
 .theme-title {
@@ -125,4 +126,13 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.5); /* Grey tint */
     z-index: 10;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
