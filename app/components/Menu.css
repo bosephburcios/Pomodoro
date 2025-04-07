@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Menu popup styling */
+.menu-popup {
+  @apply absolute top-0 left-0 w-48 bg-white text-black shadow-md p-4 rounded;
+}
+
+/* Overlay for modals */
+.overlay {
+  @apply fixed inset-0 bg-black bg-opacity-70 z-40;
+}
+
+/* Common styling for theme and settings popups */
+.theme-popup,
+.settings-popup {
+  @apply fixed z-50 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#111] text-white p-6 rounded-md w-[90%] max-w-[500px] shadow-lg;
+}
+
+/* Close button styling */
+.close-button {
+  @apply absolute top-3 right-3 text-gray-400 hover:text-gray-200;
+}
+
+/* Settings title and form elements */
+.settings-title {
+  @apply text-xl font-semibold mb-4;
+}
+
+.field-label {
+  @apply block mb-1;
+}
+
+.field-select {
+  @apply bg-gray-800 border border-gray-600 rounded px-2 py-1;
+}
+
+/* Additional styles for theme popup */
+.theme-title {
+  @apply text-xl font-semibold mb-4;
+}
+
+.gif-options {
+  @apply mt-4;
+}
+
+.gif-container {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.gif-option {
+  @apply flex flex-col items-center;
+}
+
+.gif-preview {
+  @apply w-32 h-32 object-cover rounded;
+}
+
+.select-button {
+  @apply mt-2 bg-blue-600 px-2 py-1 rounded hover:bg-blue-500;
+}
+
+.selected-button {
+  @apply bg-green-600;
+}
+
+.upload-gif {
+  @apply mt-4;
+}
+
+.upload-button {
+  @apply cursor-pointer text-blue-400 underline;
+}
