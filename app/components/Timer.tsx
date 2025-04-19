@@ -16,11 +16,21 @@ const song6 = "/sounds/if i am with you.mp3";
 // Array of songs
 const songs = [song1, song2, song3, song4, song5, song6];
 
+// Map theme name to filename
+const getThemeFile = (theme: string) => {
+  switch (theme) {
+    case "Seoul Sunrise": return "background.gif";
+    case "Cherry": return "cherry.gif";
+    case "Gojo": return "gojo.gif";
+    case "Other Background": return "other-background.gif";
+    default: return "background.gif";
+  }
+};
+
 const Timer: React.FC = () => {
-  // Store durations in seconds
-  const [pomodoroTime, setPomodoroTime] = useState(1500); // 25 minutes
-  const [shortBreakTime, setShortBreakTime] = useState(300); // 5 minutes
-  const [longBreakTime, setLongBreakTime] = useState(900); // 15 minutes
+  const [pomodoroTime, setPomodoroTime] = useState(1500);
+  const [shortBreakTime, setShortBreakTime] = useState(300);
+  const [longBreakTime, setLongBreakTime] = useState(900);
 
   const [time, setTime] = useState(pomodoroTime);
   const [isRunning, setIsRunning] = useState(false);
@@ -29,26 +39,25 @@ const Timer: React.FC = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [music, setMusic] = useState<HTMLAudioElement | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [alertSound, setAlertSound] = useState("Bell");
+  const [playSound, setPlaySound] = useState(true);
+  const [alertVolume, setAlertVolume] = useState(0.5);
+  const [musicVolume, setMusicVolume] = useState(0.5);
+  const [theme, setTheme] = useState("Other Background");
+  const [tempTheme, setTempTheme] = useState(theme);
 
-  // Mode state: "pomodoro", "shortBreak", or "longBreak"
-  const [currentMode, setCurrentMode] = useState<
-    "pomodoro" | "shortBreak" | "longBreak"
-  >("pomodoro");
+  const [currentMode, setCurrentMode] = useState<"pomodoro" | "shortBreak" | "longBreak">("pomodoro");
 
-  // Use a ref to keep track of isRunning
   const isRunningRef = useRef(isRunning);
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
 
-  // Handle mode change using current durations
   const handleModeChange = (mode: "pomodoro" | "shortBreak" | "longBreak") => {
-    console.log("Changing mode to:", mode);
     setCurrentMode(mode);
     setIsRunning(false);
     music?.pause();
     setMusic(null);
-
     if (mode === "pomodoro") {
       setTime(pomodoroTime);
       setIsWorkPhase(true);
@@ -61,34 +70,40 @@ const Timer: React.FC = () => {
     }
   };
 
-  // Open Settings modal
-  const openSettings = () => {
-    setIsSettingsOpen(true);
+  const handleSoundChange = (sound: string, volume: number, play: boolean) => {
+    setAlertSound(sound);
+    setAlertVolume(volume);
+    setPlaySound(play);
   };
 
-  // Helper: create a new Audio instance, attach event listener, and play.
   const createAndPlayMusic = (index: number) => {
-    console.log("Creating and playing song index:", index, "Song:", songs[index]);
     if (music) {
       music.removeEventListener("ended", handleSongEnd);
       music.pause();
     }
     const newAudio = new Audio(songs[index]);
+    newAudio.volume = musicVolume;
+    newAudio.muted = musicVolume === 0;
     newAudio.addEventListener("ended", handleSongEnd);
     setMusic(newAudio);
     newAudio.play();
   };
 
-  // Timer logic: decrement time every second when running.
+  useEffect(() => {
+    if (music) {
+      music.volume = musicVolume;
+    }
+  }, [musicVolume, music]);
+
   useEffect(() => {
     let timerInterval: NodeJS.Timeout;
     if (isRunning) {
       timerInterval = setInterval(() => {
         setTime((prevTime) => {
           if (prevTime <= 0) {
-            console.log("Timer finished. Playing alarm.");
             const alarmAudio = new Audio(audioFile);
-            alarmAudio.play();
+            alarmAudio.volume = alertVolume;
+            if (playSound) alarmAudio.play();
             if (isWorkPhase) {
               setTime(shortBreakTime);
               setIsWorkPhase(false);
@@ -112,34 +127,17 @@ const Timer: React.FC = () => {
     }
   }, [cyclesCompleted]);
 
-  // When a song ends, if still running, play the next song.
   const handleSongEnd = () => {
     if (!isRunningRef.current) return;
     setCurrentSongIndex((prevIndex) => {
       const nextIndex = (prevIndex + 1) % songs.length;
-      console.log(
-        "Song ended. Current song index:",
-        prevIndex,
-        "Next song index:",
-        nextIndex,
-        "Next song:",
-        songs[nextIndex]
-      );
-      setTimeout(() => {
-        createAndPlayMusic(nextIndex);
-      }, 1500);
+      setTimeout(() => createAndPlayMusic(nextIndex), 1500);
       return nextIndex;
     });
   };
 
   const toggleTimer = () => {
     if (!isRunning) {
-      console.log(
-        "Starting timer. Current song index:",
-        currentSongIndex,
-        "Song:",
-        songs[currentSongIndex]
-      );
       if (music && music.paused) {
         music.play();
       } else {
@@ -147,49 +145,55 @@ const Timer: React.FC = () => {
       }
       setIsRunning(true);
     } else {
-      console.log("Pausing timer. Current song index:", currentSongIndex);
       music?.pause();
       setIsRunning(false);
     }
   };
 
   const resetTimer = () => {
-    console.log("Resetting timer.");
-    setTime(pomodoroTime);
     setIsRunning(false);
     setCyclesCompleted(0);
-    setIsWorkPhase(true);
     setCurrentSongIndex(0);
     music?.pause();
     setMusic(null);
+    if (currentMode === "pomodoro") {
+      setTime(pomodoroTime);
+      setIsWorkPhase(true);
+    } else if (currentMode === "shortBreak") {
+      setTime(shortBreakTime);
+      setIsWorkPhase(false);
+    } else {
+      setTime(longBreakTime);
+      setIsWorkPhase(false);
+    }
   };
 
-  // Callback to update time durations from SettingsModal (times in minutes)
-  const handleTimeChange = (
-    newPomodoro: number,
-    newShortBreak: number,
-    newLongBreak: number
-  ) => {
-    console.log(
-      "Updating timer durations:",
-      "Pomodoro:",
-      newPomodoro,
-      "Short Break:",
-      newShortBreak,
-      "Long Break:",
-      newLongBreak
-    );
+  const handleTimeChange = (newPomodoro: number, newShortBreak: number, newLongBreak: number) => {
     setPomodoroTime(newPomodoro * 60);
     setShortBreakTime(newShortBreak * 60);
     setLongBreakTime(newLongBreak * 60);
-    if (currentMode === "pomodoro") {
-      setTime(newPomodoro * 60);
-    } else if (currentMode === "shortBreak") {
-      setTime(newShortBreak * 60);
-    } else {
-      setTime(newLongBreak * 60);
+    if (!isRunning) {
+      if (currentMode === "pomodoro") {
+        setTime(newPomodoro * 60);
+      } else if (currentMode === "shortBreak") {
+        setTime(newShortBreak * 60);
+      } else {
+        setTime(newLongBreak * 60);
+      }
     }
   };
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      setTempTheme(theme); // Sync temp theme with committed theme
+    }
+  }, [isSettingsOpen]);
+
+  useEffect(() => {
+    const activeTheme = isSettingsOpen ? tempTheme : theme;
+    const gif = getThemeFile(activeTheme);
+    document.body.style.backgroundImage = `url(/gifs/${gif})`;
+  }, [theme, tempTheme, isSettingsOpen]);
 
   return (
     <>
@@ -200,30 +204,9 @@ const Timer: React.FC = () => {
       <div className="rectangle-container">
         {/* TOP BAR */}
         <div className="top-bar">
-          <button
-            className={`top-bar-button ${
-              currentMode === "pomodoro" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("pomodoro")}
-          >
-            Pomodoro
-          </button>
-          <button
-            className={`top-bar-button ${
-              currentMode === "shortBreak" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("shortBreak")}
-          >
-            Short Break
-          </button>
-          <button
-            className={`top-bar-button ${
-              currentMode === "longBreak" ? "selected" : ""
-            }`}
-            onClick={() => handleModeChange("longBreak")}
-          >
-            Long Break
-          </button>
+          <button className={`top-bar-button ${currentMode === "pomodoro" ? "selected" : ""}`} onClick={() => handleModeChange("pomodoro")}>Pomodoro</button>
+          <button className={`top-bar-button ${currentMode === "shortBreak" ? "selected" : ""}`} onClick={() => handleModeChange("shortBreak")}>Short Break</button>
+          <button className={`top-bar-button ${currentMode === "longBreak" ? "selected" : ""}`} onClick={() => handleModeChange("longBreak")}>Long Break</button>
         </div>
 
         {/* CENTER TIME DISPLAY */}
@@ -231,52 +214,50 @@ const Timer: React.FC = () => {
 
         {/* BOTTOM CONTROLS */}
         <div className="bottom-controls">
-          <button onClick={toggleTimer} className="start-button">
-            {isRunning ? "Pause" : "Start"}
-          </button>
-
-          {/* Reset icon using Material Symbols Outlined */}
-          <span
-            className="material-symbols-outlined reset-icon"
-            onClick={resetTimer}
-          >
-            refresh
-          </span>
-
-          {/* Settings icon using Material Symbols Outlined */}
-          <span
-            className="material-symbols-outlined settings-icon"
-            onClick={() => setIsSettingsOpen(true)}
-          >
-            settings
-          </span>
+          <button onClick={toggleTimer} className="start-button">{isRunning ? "Pause" : "Start"}</button>
+          <span className="material-symbols-outlined reset-icon" onClick={resetTimer}>refresh</span>
+          <span className="material-symbols-outlined settings-icon" onClick={() => setIsSettingsOpen(true)}>settings</span>
         </div>
       </div>
 
-      {/* Settings Modal */}
-      <div className={`settings-modal-overlay ${isSettingsOpen ? "fade-in" : ""}`}>
-        {isSettingsOpen && (
-          <SettingsModal
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-            onResetAll={() => console.log("Reset all settings")}
-            onSaveChanges={() => {
-              console.log("Save settings");
-              setIsSettingsOpen(false);
-            }}
-            isLoggedIn={false} // Update with your actual login state
-            pomodoroTime={pomodoroTime / 60} // pass in minutes
-            shortBreakTime={shortBreakTime / 60} // pass in minutes
-            longBreakTime={longBreakTime / 60} // pass in minutes
-            onTimeChange={handleTimeChange}
-          />
-        )}
-      </div>
+      {/* SETTINGS MODAL */}
+      {isSettingsOpen && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => {
+            setIsSettingsOpen(false);
+            setTempTheme(theme); // revert preview
+          }}
+          onResetAll={() => console.log("Reset all settings")}
+          onSoundChange={handleSoundChange}
+          onSaveChanges={() => {
+            setTheme(tempTheme); // commit selected
+            setIsSettingsOpen(false);
+          }}
+          isLoggedIn={false}
+          pomodoroTime={pomodoroTime / 60}
+          shortBreakTime={shortBreakTime / 60}
+          longBreakTime={longBreakTime / 60}
+          onTimeChange={handleTimeChange}
+          alarmSound={alertSound}
+          alarmVolume={alertVolume}
+          shouldPlaySound={playSound}
+          musicVolume={musicVolume}
+          onMusicVolumeChange={(v) => {
+            setMusicVolume(v);
+            if (music) {
+              music.volume = v;
+              music.muted = v === 0;
+            }
+          }}
+          selectedTheme={tempTheme}
+          onThemePreview={(newTheme) => setTempTheme(newTheme)}
+        />
+      )}
     </>
   );
 };
 
-// Helper function to format time as mm:ss
 function formatTime(time: number) {
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;

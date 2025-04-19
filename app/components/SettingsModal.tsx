@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,11 +12,19 @@ interface SettingsModalProps {
   pomodoroTime: number; // in minutes
   shortBreakTime: number; // in minutes
   longBreakTime: number; // in minutes
+  onSoundChange: (sound: string, volume: number, play: boolean) => void;
+  alarmSound: string;
+  alarmVolume: number;
+  shouldPlaySound: boolean;
+  musicVolume: number;
+  onMusicVolumeChange: (volume: number) => void;
   onTimeChange: (
     pomodoro: number,
     shortBreak: number,
     longBreak: number
   ) => void;
+  selectedTheme: string;
+  onThemePreview: (theme: string) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -28,14 +37,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   shortBreakTime,
   longBreakTime,
   onTimeChange,
+  onSoundChange,
+  onMusicVolumeChange,
+  alarmSound,
+  alarmVolume,
+  shouldPlaySound,
+  musicVolume,
+  selectedTheme,
+  onThemePreview,
 }) => {
+  const router = useRouter();
   // Active tab
   const [activeTab, setActiveTab] = useState<
-    "general" | "timers" | "sounds" | "account"
+    "general" | "timers" | "sounds" | "connect services" | "account"
   >("general");
 
-  // Example theme state
-  const [selectedTheme, setSelectedTheme] = useState("Seoul Sunrise");
+  const [localTheme, setLocalTheme] = useState(selectedTheme);
 
   // For uploading an image/gif
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,9 +66,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   // ------------------
   // Sounds Tab States
   // ------------------
-  const [alertSound, setAlertSound] = useState("Bell");
-  const [playSound, setPlaySound] = useState(true);
-  const [alertVolume, setAlertVolume] = useState(0.5); // Range from 0 to 1
+  const [alertSound, setAlertSound] = useState(alarmSound);
+  const [playSound, setPlaySound] = useState(shouldPlaySound);
+  const [alertVolume, setAlertVolume] = useState(alarmVolume);
+  const [localMusicVolume, setLocalMusicVolume] = useState(musicVolume);
+
+  useEffect(() => {
+    if (isOpen) {
+      setAlertSound(alarmSound);
+      setPlaySound(shouldPlaySound);
+      setAlertVolume(alarmVolume);
+      setLocalMusicVolume(musicVolume);
+      setLocalTheme(selectedTheme);
+    }
+  }, [isOpen, musicVolume, selectedTheme]);
 
   // Sync local state when props change
   useEffect(() => {
@@ -97,6 +125,40 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     alert(`Uploaded: ${file.name}`);
   };
 
+  // Play preview sound when selecting alert sound
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playPreviewSound = (soundName: string) => {
+    if (soundName === "None") {
+      setPlaySound(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      return;
+    }
+
+    const audioPath = `/sounds/${soundName.toLowerCase()}.mp3`;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    audioRef.current = new Audio(audioPath);
+    audioRef.current.volume = alertVolume;
+    audioRef.current.play().catch((err) => {
+      console.warn("Sound preview failed:", err);
+    });
+  };
+
+  useEffect(() => {
+    if (!isOpen && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [isOpen]);
+
   // ------------------
   // Tab Content
   // ------------------
@@ -110,14 +172,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="mb-6">
               <label className="block mb-2">Select Theme:</label>
               <select
-                value={selectedTheme}
-                onChange={(e) => setSelectedTheme(e.target.value)}
-                className="w-[400px] bg-gray-800 border border-gray-600 rounded px-2 py-1"
+                value={localTheme}
+                onChange={(e) => {
+                  const newTheme = e.target.value;
+                  setLocalTheme(newTheme);
+                  onThemePreview(newTheme); // Preview in real time
+                }}
+                className="w-full sm:w-[400px] bg-gray-800 border border-gray-600 rounded px-2 py-1"
               >
-                <option>Seoul Sunrise</option>
-                <option>Cherry Blossom</option>
-                <option>Gojo</option>
-                <option>Background GIF</option>
+                <option value="Seoul Sunrise">Mountains</option>
+                <option value="Other Background">Default</option>
+                <option value="Gojo">Gojo</option>
+                <option value="Cherry">Cherry</option>
               </select>
             </div>
 
@@ -222,7 +288,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {/* Auto Start Breaks Toggle */}
             <div className="mb-6 flex items-center">
-              <p className="mr-4 text-sm">Auto Start Breaks</p>
+              <p className="mr-4 text-sm">Start Breaks Automatically</p>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -247,11 +313,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <label className="block mb-2">Select alert sound:</label>
               <select
                 value={alertSound}
-                onChange={(e) => setAlertSound(e.target.value)}
+                onChange={(e) => {
+                  const selected = e.target.value;
+                  setAlertSound(selected);
+                  playPreviewSound(selected);
+                }}
                 className="w-[300px] bg-gray-800 border border-gray-600 rounded px-2 py-1"
               >
                 <option value="Bell">Bell</option>
-                <option value="Bird">Bird</option>
+                <option value="Alarm">Classic Alarm</option>
                 <option value="Chime">Chime</option>
                 <option value="None">None</option>
               </select>
@@ -281,11 +351,57 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 max={1}
                 step={0.01}
                 value={alertVolume}
-                onChange={(e) => setAlertVolume(Number(e.target.value))}
-                className="w-[250px] accent-white cursor-pointer"
+                onChange={(e) => {
+                  const volume = Number(e.target.value);
+                  setAlertVolume(volume);
+
+                  if (audioRef.current) {
+                    audioRef.current.volume = volume;
+                  }
+                }}
+                className="w-full sm:w-[250px] accent-white cursor-pointer"
               />
-              <p className="text-xs text-gray-400 mt-1">Volume: {Math.round(alertVolume * 100)}%</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Volume: {Math.round(alertVolume * 100)}%
+              </p>
             </div>
+
+            {/* Music volume */}
+            <div className="mb-6">
+              <label className="block mb-2 text-sm">Music volume</label>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={localMusicVolume}
+                onChange={(e) => {
+                  const vol = Number(e.target.value);
+                  setLocalMusicVolume(vol);
+                  onMusicVolumeChange(vol);
+                }}
+                className="w-full sm:w-[250px] accent-white cursor-pointer"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Volume: {Math.round(localMusicVolume * 100)}%
+              </p>
+            </div>
+          </>
+        );
+
+      case "connect services":
+        return (
+          <>
+            <h1 className="text-xl font-semibold mb-4">Connect Services</h1>
+            <p className="mb-4">
+              Link your account to services for syncing and customization.
+            </p>
+            <button
+              onClick={() => router.push("/connect_services")}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow"
+            >
+              Go to Connect Services
+            </button>
           </>
         );
 
@@ -304,9 +420,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   // When "Save changes" is clicked, update parent timer values + any sounds logic
   const handleSave = () => {
-    // For now, we only pass the timers up to the parent
     onTimeChange(localPomodoro, localShortBreak, localLongBreak);
-    // You could also pass up alertSound, playSound, and alertVolume if needed
+    onSoundChange(alertSound, alertVolume, playSound);
+    onMusicVolumeChange(localMusicVolume);
     onSaveChanges();
   };
 
@@ -335,17 +451,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-70" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black bg-opacity-70"
+        onClick={onClose}
+      />
 
       {/* Modal container */}
-      <div className="
+      <div
+        className="
         relative bg-[#111] text-white rounded-3xl shadow-xl 
         w-full sm:max-w-[650px] max-w-[90%] 
-        min-h-[40vh] max-h-[75vh] 
-        flex overflow-hidden
-      ">
+        min-h-[40vh] max-h-[85vh]
+        flex flex-col sm:flex-row overflow-hidden
+      "
+      >
         {/* LEFT SIDE TABS */}
-        <div className="w-[160px] p-4 mt-6 flex flex-col space-y-2">
+        <div
+          className="
+          flex sm:flex-col flex-row 
+          sm:w-[160px] w-full 
+          border-b sm:border-b border-gray-700
+          sm:p-4 p-2 justify-between sm:justify-start
+        "
+        >
           <button
             className={`text-left py-2 px-3 rounded hover:bg-[#222] ${
               activeTab === "general" ? "text-white bg-[#222]" : "text-gray-300"
@@ -369,6 +497,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab("sounds")}
           >
             Sounds
+          </button>
+          <button
+            className={`text-left py-2 px-3 rounded hover:bg-[#222] ${
+              activeTab === "connect services" ? "text-white bg-[#222]" : "text-gray-300"
+            }`}
+            onClick={() => router.push("/connect_services")}
+          >
+            Connect
           </button>
           <button
             className={`text-left py-2 px-3 rounded hover:bg-[#222] ${
