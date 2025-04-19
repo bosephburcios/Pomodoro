@@ -199,6 +199,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </span>
                 !
               </p>
+              <p className="mb-2 text-center text-center">Please upload a .gif, .png, or .jpg file.</p>
               <input
                 type="file"
                 accept="image/gif,image/png,image/jpeg"
